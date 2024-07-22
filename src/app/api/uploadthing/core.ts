@@ -1,7 +1,7 @@
 import { z } from "zod";
 import sharp from "sharp";
-import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { db } from "@/db";
+import { createUploadthing, type FileRouter } from "uploadthing/next";
 
 const f = createUploadthing();
 
