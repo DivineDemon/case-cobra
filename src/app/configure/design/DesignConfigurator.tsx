@@ -21,6 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import HandleComponent from "@/components/HandleComponent";
 import { base64ToBlob, cn, formatPrice } from "@/lib/utils";
+import { saveConfig as _saveConfig, SaveConfigArgs } from "./actions";
 
 import {
   Radio,
@@ -31,6 +32,8 @@ import {
 import { Rnd } from "react-rnd";
 import NextImage from "next/image";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowRight, Check, ChevronsUpDown } from "lucide-react";
 
 interface DesignConfiuguratorProps {
@@ -44,6 +47,7 @@ const DesignConfigurator = ({
   imageUrl,
   imageDimensions,
 }: DesignConfiuguratorProps) => {
+  const router = useRouter();
   const { toast } = useToast();
   const [options, setOptions] = useState<{
     color: (typeof COLORS)[number];
@@ -55,6 +59,22 @@ const DesignConfigurator = ({
     model: MODELS.options[0],
     finish: FINISHES.options[0],
     material: MATERIALS.options[0],
+  });
+  const { mutate: saveConfig } = useMutation({
+    mutationKey: ["save-config"],
+    mutationFn: async (args: SaveConfigArgs) => {
+      await Promise.all([saveConfiguration(), _saveConfig(args)]);
+    },
+    onError: () => {
+      toast({
+        title: "Something went wrong!",
+        description: "There was an error on our end, please try again!",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      router.push(`/configure/preview?id=${configId}`);
+    },
   });
   const phoneCaseRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -355,7 +375,15 @@ const DesignConfigurator = ({
                 )}
               </p>
               <Button
-                onClick={() => saveConfiguration()}
+                onClick={() =>
+                  saveConfig({
+                    configId,
+                    color: options.color.value,
+                    model: options.model.value,
+                    finish: options.finish.value,
+                    material: options.material.value,
+                  })
+                }
                 type="button"
                 size="sm"
                 className="w-full"
