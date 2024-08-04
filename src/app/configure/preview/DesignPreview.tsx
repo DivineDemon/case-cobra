@@ -24,6 +24,8 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
+  console.log(user);
+
   const { color, model, finish, material } = configuration;
 
   const { label: modelLabel } = MODELS.options.find(
@@ -63,12 +65,10 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
 
   const handleCheckout = () => {
     if (user) {
-      // Create Payment Session
       createPaymentSession({ configId: configuration.id });
     } else {
       localStorage.setItem("configurationId", configuration.id);
       setIsLoginModalOpen(true);
-      // Prompt to Login
     }
   };
 
