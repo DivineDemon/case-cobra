@@ -3,6 +3,7 @@
 import Phone from "@/components/Phone";
 import { cn, formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import LoginModal from "@/components/LoginModal";
 import { createCheckoutSession } from "./actions";
 import { useToast } from "@/components/ui/use-toast";
 import { BASE_PRICE, PRODUCT_PRICES } from "@/config/products";
@@ -14,11 +15,15 @@ import { useRouter } from "next/navigation";
 import { Configuration } from "@prisma/client";
 import { ArrowRight, Check } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
 
 const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useKindeBrowserClient();
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
   const { color, model, finish, material } = configuration;
 
   const { label: modelLabel } = MODELS.options.find(
@@ -56,6 +61,17 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
     },
   });
 
+  const handleCheckout = () => {
+    if (user) {
+      // Create Payment Session
+      createPaymentSession({ configId: configuration.id });
+    } else {
+      localStorage.setItem("configurationId", configuration.id);
+      setIsLoginModalOpen(true);
+      // Prompt to Login
+    }
+  };
+
   useEffect(() => {
     setShowConfetti(true);
   }, []);
@@ -74,6 +90,9 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
           }}
         />
       </div>
+
+      <LoginModal isOpen={isLoginModalOpen} setOpen={setIsLoginModalOpen} />
+
       <div className="mt-20 grid grid-cols-1 text-sm sm:grid-cols-12 sm:grid-rows-1 sm:gap-x-6 md:gap-x-8 lg:gap-x-12">
         <div className="sm:col-span-4 md:col-span-3 md:row-span-2 md:row-end-2">
           <Phone
@@ -148,9 +167,7 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
                 disabled={isPending}
                 isLoading={isPending}
                 loadingText="Please Wait"
-                onClick={() =>
-                  createPaymentSession({ configId: configuration.id })
-                }
+                onClick={() => handleCheckout()}
                 className="px-4 sm:px-6 lg:px-8"
               >
                 Check out <ArrowRight className="size-4 ml-1.5 inline" />
