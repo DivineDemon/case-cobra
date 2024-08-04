@@ -24,8 +24,6 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
-  console.log(user);
-
   const { color, model, finish, material } = configuration;
 
   const { label: modelLabel } = MODELS.options.find(
